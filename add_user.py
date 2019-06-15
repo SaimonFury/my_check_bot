@@ -3,7 +3,6 @@ import config
 import logging
 
 
-
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', #добавил логирование
                     level=logging.INFO,
                     filename='bot.log'
@@ -30,7 +29,7 @@ def delete_user(bot, update, user_data): #создаю функцию удале
                                       
 
 def main():
-    mybot = Updater(config.API_KEY)
+    mybot = Updater(config.API_KEY, request_kwargs=config.PROXY)
     
     logging.info('Бот запускается')
 
