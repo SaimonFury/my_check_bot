@@ -26,13 +26,16 @@ def add_new_user(bot, update, user_data):
     #print(user_data['teacher1'])
 
 def delete_user(bot, update, user_data): #создаю функцию удаления юзера
-    print('!')
     del_user = update.message.text
-    print(update.message)
     try:
         user_data['teacher1'].remove(del_user)
     except ValueError:
         update.message.reply_text('Нет такого студента')
+    #except TypeError:
+    #    update.message.reply_text('')
+    except KeyError:
+        update.message.reply_text('Введите имя преподавателя')
+
 
 
 def see_students_list(bot, update, user_data): # Просмотр всех учеников
