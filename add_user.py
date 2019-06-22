@@ -1,4 +1,5 @@
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, ConversationHandler
+from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove
 import config
 import logging
 
@@ -10,14 +11,21 @@ logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', #доб�
 
 
 def start(bot, update, user_data):
-    update.message.reply_text('Введите преподавателя')
+    update.message.reply_text('Введите преподавателя', reply_markup=ReplyKeyboardRemove())
     return 'teachers_group'
+
 
 def find_teachers_group(bot, update, user_data):
     teachers_name = update.message.text
     print(teachers_name)
     with open('teacher1.txt', 'r', encoding='ptcp154') as t1_file: #Здесь будет проверка, есть ли такой преподаватель и список его учеников из бд
         user_data['teacher1'] = list(t1_file.read().split('\n'))
+    my_keyboard = ReplyKeyboardMarkup([
+        ['/list'],
+        ['/edit_group'],
+        ['/?']
+    ])
+    update.message.reply_text('Выберите действие', reply_markup=my_keyboard) #Без текстового сообщения клава почему-то не появляется
     return 'actions'
 
 
