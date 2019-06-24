@@ -30,10 +30,16 @@ def find_teachers_group(bot, update, user_data):
 
 
 def edit_group(bot, update, user_data):
+    my_keyboard = ReplyKeyboardMarkup([
+        ['/add'],
+        ['/delete']
+        #['/back']
+    ])
+    update.message.reply_text('Выберите действие', reply_markup=my_keyboard)  # Без текстового сообщения клава почему-то не появл
     return 'edit'
 
 def ask_user_name(bot, update):
-    update.message.reply_text('Введите нового пользователя')
+    update.message.reply_text('Введите нового пользователя', reply_markup=ReplyKeyboardRemove())
 
 
 
@@ -78,6 +84,7 @@ def main():
                         CommandHandler('edit_group', edit_group, pass_user_data=True)],
                         #CommandHandler('?', questions, pass_user_data=True)]
             'edit': [CommandHandler('add', ask_user_name),
+                     CommandHandler('delete', delete_user, pass_user_data=True),
                      MessageHandler(Filters.text, add_new_user, pass_user_data=True)]
 
         },
@@ -85,7 +92,7 @@ def main():
     )
 
     dp = mybot.dispatcher
-    dp.add_handler(CommandHandler("delete", delete_user, pass_user_data=True)) #добавил хендлер удаления
+    #dp.add_handler(CommandHandler("delete", delete_user, pass_user_data=True)) #добавил хендлер удаления
 
     dp.add_handler(dialog)
 
