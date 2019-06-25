@@ -30,12 +30,15 @@ def find_teachers_group(bot, update, user_data):
 
 
 def edit_group(bot, update, user_data):
+    students_list = ''
+    for student in user_data['teacher1']:
+        students_list += f'{student}\n'
     my_keyboard = ReplyKeyboardMarkup([
         ['/add'],
         ['/delete']
         #['/back']
     ])
-    update.message.reply_text('Выберите действие', reply_markup=my_keyboard)  # Без текстового сообщения клава почему-то не появл
+    update.message.reply_text(students_list, reply_markup=my_keyboard)
     return 'edit'
 
 def ask_user_name(bot, update):
@@ -64,11 +67,24 @@ def delete_user(bot, update, user_data): #создаю функцию удале
 
 
 
-def see_students_list(bot, update, user_data): # Просмотр всех учеников
-    students_list = ''
+def see_students_list(bot, update, user_data): #Просмотр всех учеников
+    students_list_keyboard = []
     for student in user_data['teacher1']:
-        students_list += f'{student}\n'
-    update.message.reply_text(students_list)
+        student_button = list[student]
+        students_list_keyboard.append(student_button)
+    update.message.reply_text('Список студентов:', students_list_keyboard)
+    return 'student'
+
+
+def see_students_tasks(bot, update, user_data):
+    students_name = update.message.text()
+    tasks_keyboard = [
+        ['/done_tasks'],
+        ['/undone_tasks'],
+        ['/questions']
+    ]
+    update.message.reply_text('', tasks_keyboard)
+    return 'tasks'
 
 
 def main():
@@ -78,21 +94,24 @@ def main():
 
     dialog = ConversationHandler(
         entry_points=[CommandHandler('start', start, pass_user_data=True)],
-        states = {
+        states={
             'teachers_group': [MessageHandler(Filters.text, find_teachers_group, pass_user_data=True)],
             'actions': [CommandHandler('list', see_students_list, pass_user_data=True),
                         CommandHandler('edit_group', edit_group, pass_user_data=True)],
-                        #CommandHandler('?', questions, pass_user_data=True)]
+                        #CommandHandler('questions', show_questions, pass_user_data=True)]
             'edit': [CommandHandler('add', ask_user_name),
                      CommandHandler('delete', delete_user, pass_user_data=True),
-                     MessageHandler(Filters.text, add_new_user, pass_user_data=True)]
+                     MessageHandler(Filters.text, add_new_user, pass_user_data=True)],
+            'student': [MessageHandler(Filters.text, see_students_tasks, pass_user_data=True)]
+            #'tasks': [CommandHandler('done_tasks', show_done_tasks, pass_user_data=True),
+             #         CommandHandler('undone_tasks', show_done_tasks, pass_user_data=True),
+              #        CommandHandler('questions', show_questions, pass_user_data=True),]
 
         },
         fallbacks = []
     )
 
     dp = mybot.dispatcher
-    #dp.add_handler(CommandHandler("delete", delete_user, pass_user_data=True)) #добавил хендлер удаления
 
     dp.add_handler(dialog)
 
