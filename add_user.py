@@ -3,6 +3,8 @@ from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove
 import config
 import logging
 
+import db_users as db
+from db_users import Users 
 
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', #добавил логирование
                     level=logging.INFO,
@@ -11,7 +13,7 @@ logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', #доб�
 
 
 def start(bot, update, user_data):
-    update.message.reply_text('Введите преподавателя', reply_markup=ReplyKeyboardRemove())
+    update.message.reply_text('Введите преподавателя', reply_markup=ReplyKeyboardRemove())#предлагаю Введите преподавателя убрать и сделать кнопку выберите преподавателя, нажимая будет выпадать список
     return 'teachers_group'
 
 
@@ -70,8 +72,23 @@ def see_students_list(bot, update, user_data): # Просмотр всех уч�
         students_list += f'{student}\n'
     update.message.reply_text(students_list)
 
+def save_users(user='Sergey', git_url='www.github.com', gmt=2):
+    #try:
+    repeat_user = Users.query.filter(Users.user == user).first()
+    print(repeat_user)
+    if not repeat_user:   
+        new_user = Users(user=user, git_url=git_url, gmt=gmt)
+        db.db_session.add(new_user)
+        db.db_session.commit()
+    #except:
+        #update.message.reply_text('')
+
+
 
 def main():
+
+    save_users()
+
     mybot = Updater(config.API_KEY, request_kwargs=config.PROXY)
     
     logging.info('Бот запускается')
