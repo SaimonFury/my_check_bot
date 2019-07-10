@@ -4,7 +4,8 @@ import config
 import logging
 
 import db_users as db
-from db_users import Users 
+from db_users import Users
+from create_user import add_new_user
 
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', #добавил логирование
                     level=logging.INFO,
@@ -49,13 +50,13 @@ def ask_user_name(bot, update):
     update.message.reply_text('Введите нового пользователя', reply_markup=ReplyKeyboardRemove())
 
 
-def add_new_user(bot, update, user_data):
-    """Запись информации о пользователе в текстовый файл"""
-    new_user = update.message.text
-    user_data['teacher1'].append(new_user)  # Добавляем нового ученика в user_data
-    with open('teacher1.txt', 'a', encoding='ptcp154') as t1_file:
-        # TODO: Здесь мы будем добавлять нового ученика не в текстовый документ, а в бд
-        t1_file.write(f'\n{new_user}')
+#  def add_new_user(bot, update, user_data):
+#    """Запись информации о пользователе в текстовый файл"""
+#    new_user = update.message.text
+#    user_data['teacher1'].append(new_user)  # Добавляем нового ученика в user_data
+#    with open('teacher1.txt', 'a', encoding='ptcp154') as t1_file:
+#        # TODO: Здесь мы будем добавлять нового ученика не в текстовый документ, а в бд
+#        t1_file.write(f'\n{new_user}')
 
 
 def delete_user(bot, update, user_data):  # создаю функцию удаления юзера
@@ -105,9 +106,7 @@ def save_users(user='Sergey', git_url='www.github.com', gmt=2):
         #update.message.reply_text('')
 
 
-
 def main():
-
     save_users()
 
     mybot = Updater(config.API_KEY, request_kwargs=config.PROXY)
