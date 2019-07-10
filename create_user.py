@@ -2,6 +2,7 @@ from model import Student, db_session
 
 
 def add_new_user(bot, update, user_data):
+    '''Логин студента приходит в update message text'''
     new_user = update.message.text
     # TODO: Проверка, что такого пользователя нет
     new_student = Student(username=new_user, role='student')

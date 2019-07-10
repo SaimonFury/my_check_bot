@@ -96,7 +96,7 @@ def get_fallback(bot, update, user_data):
 
 def save_users(user='Sergey', git_url='www.github.com', gmt=2):
     #try:
-    repeat_user = Users.query.filter(Users.user == user).first()
+    repeat_user = Users.query.filter(Users.user == user).order_by(Users.gmt, git_url).first()
     print(repeat_user)
     if not repeat_user:   
         new_user = Users(user=user, git_url=git_url, gmt=gmt)
