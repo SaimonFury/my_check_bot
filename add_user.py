@@ -1,4 +1,4 @@
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, ConversationHandler
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, ConversationHandler, RegexHandler
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove
 import config
 import logging
@@ -28,6 +28,7 @@ def find_teachers_group(bot, update, user_data):
         ['/list'],
         ['/edit_group'],
         ['/questions']
+        #['/back']
     ])
     update.message.reply_text('Выберите действие', reply_markup=my_keyboard)
     return 'actions'
@@ -94,24 +95,70 @@ def see_students_tasks(bot, update, user_data):
 def get_fallback(bot, update, user_data):
     update.message.reply_text('Пожалуйста, переформулируйте ответ')
 
+
 def save_users(user='Sergey', git_url='www.github.com', gmt=2):
-    #try:
     repeat_user = Users.query.filter(Users.user == user).order_by(Users.gmt, git_url).first()
     print(repeat_user)
+
+def save_data_users(bot, update, user_data):#функция добавления данных в бд
+    user=user_data['student_user']
+    repeat_user = Users.query.filter(Users.user == user).first()
     if not repeat_user:   
-        new_user = Users(user=user, git_url=git_url, gmt=gmt)
+        new_user = Users(user=user, git_url=user_data['git'], gmt=user_data['gmt'])
         db.db_session.add(new_user)
         db.db_session.commit()
-    #except:
-        #update.message.reply_text('')
+        return 'saved'
+    else:
+        return 'allready exist'
+    
+
+def dialog_start(bot, update, user_data):#начало диалога
+    update.message.reply_text('Введите имя студента', reply_markup=ReplyKeyboardRemove())
+    return 'user'
+
+
+def dialog_user(bot, update, user_data):
+    user_data['student_user']=update.message.text
+    print(user_data)
+    user=user_data['student_user']
+    print(user)
+    repeat_user = Users.query.filter(Users.user == user).first()
+    print(repeat_user)
+    if repeat_user:
+        print('aaa')
+        update.message.reply_text(f'Пользователь с именем {user} уже существует')
+        return ConversationHandler.END
+    update.message.reply_text('Введите ссылку на github')
+    return 'github'
+
+def dialog_git(bot, update, user_data):
+    user_data['git']=update.message.text
+    update.message.reply_text('Введите ваш часовой пояс')
+    return 'gmt'
+
+def dialog_gmt(bot, update, user_data):
+    user_data['gmt']=int(update.message.text)
+    result=save_data_users(bot, update, user_data)
+    update.message.reply_text(result)
+    return ConversationHandler.END
 
 
 def main():
-    save_users()
 
     mybot = Updater(config.API_KEY, request_kwargs=config.PROXY)
     
     logging.info('Бот запускается')
+
+    add_dialog = ConversationHandler(
+        entry_points=[CommandHandler('add', dialog_start, pass_user_data=True)],
+        states={
+            'user':[MessageHandler(Filters.text, dialog_user, pass_user_data=True)],
+            'github':[MessageHandler(Filters.text, dialog_git, pass_user_data=True)],
+            'gmt':[MessageHandler(Filters.text, dialog_gmt, pass_user_data=True)],
+            'save_to_db':[MessageHandler(Filters.text, save_data_users, pass_user_data=True)]
+        },
+        fallbacks=[MessageHandler(Filters, get_fallback, pass_user_data=True)]
+    )
 
     dialog = ConversationHandler(
         entry_points=[CommandHandler('start', start, pass_user_data=True)],
@@ -120,7 +167,7 @@ def main():
             'actions': [CommandHandler('list', see_students_list, pass_user_data=True),
                         CommandHandler('edit_group', edit_group, pass_user_data=True)],
                         # CommandHandler('questions', show_questions, pass_user_data=True)]
-            'edit': [CommandHandler('add', ask_user_name),
+            'edit': [add_dialog,
                      CommandHandler('delete', delete_user, pass_user_data=True),
                      MessageHandler(Filters.text, add_new_user, pass_user_data=True)],
             'student': [MessageHandler(Filters.text, see_students_tasks, pass_user_data=True)]
