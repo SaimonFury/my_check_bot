@@ -21,25 +21,25 @@ def main():
     
     logging.info('Бот запускается')
 
-    add_dialog = ConversationHandler(
-        entry_points=[CommandHandler('add', dialog_start, pass_user_data=True)],
+    data_user_dialog = ConversationHandler(
+        entry_points=[CommandHandler('add', data_user_dialog_start, pass_user_data=True)],
         states={
-            'user':[MessageHandler(Filters.text, dialog_user, pass_user_data=True)],
-            'github':[MessageHandler(Filters.text, dialog_git, pass_user_data=True)],
-            'gmt':[MessageHandler(Filters.text, dialog_gmt, pass_user_data=True)],
+            'user':[MessageHandler(Filters.text, data_user_dialog_user, pass_user_data=True)],
+            'github':[MessageHandler(Filters.text, data_user_dialog_git, pass_user_data=True)],
+            'gmt':[MessageHandler(Filters.text, data_user_dialog_gmt, pass_user_data=True)],
             'save_to_db':[MessageHandler(Filters.text, save_data_users, pass_user_data=True)]
         },
         fallbacks=[MessageHandler(Filters, get_fallback, pass_user_data=True)]
     )
 
-    dialog = ConversationHandler(
+    main_dialog = ConversationHandler(
         entry_points=[CommandHandler('start', start, pass_user_data=True)],
         states={
             'teachers_group': [MessageHandler(Filters.text, find_teachers_group, pass_user_data=True)],
             'actions': [CommandHandler('list', see_students_list, pass_user_data=True),
                         CommandHandler('edit_group', edit_group, pass_user_data=True)],
                         # CommandHandler('questions', show_questions, pass_user_data=True)]
-            'edit': [add_dialog,
+            'edit': [data_user_dialog,
                      CommandHandler('delete', delete_user, pass_user_data=True),
                      MessageHandler(Filters.text, add_new_user, pass_user_data=True)],
             'student': [MessageHandler(Filters.text, see_students_tasks, pass_user_data=True)]
@@ -53,7 +53,7 @@ def main():
 
     dp = mybot.dispatcher
 
-    dp.add_handler(dialog)
+    dp.add_handler(main_dialog)
 
     mybot.start_polling()
     mybot.idle()

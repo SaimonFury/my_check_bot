@@ -87,9 +87,6 @@ def see_students_tasks(bot, update, user_data):
 def get_fallback(bot, update, user_data):
     update.message.reply_text('Пожалуйста, переформулируйте ответ')
 
-def clean_temporary_user_data(bot, update,user_data):
-    pass
-
 def save_users(user='Sergey', git_url='www.github.com', gmt=2):
     repeat_user = Users.query.filter(Users.user == user).order_by(Users.gmt, git_url).first()
     print(repeat_user)
@@ -106,29 +103,35 @@ def save_data_users(bot, update, user_data):#функция добавления
         return 'allready exist'
     
 
-def dialog_start(bot, update, user_data):#начало диалога
+def data_user_dialog_start(bot, update, user_data):#начало диалога
     update.message.reply_text('Введите имя студента', reply_markup=ReplyKeyboardRemove())
     return 'user'
 
 
-def dialog_user(bot, update, user_data):
+def data_user_dialog_user(bot, update, user_data):#user == temporary_user?
     user_data['student_user']=update.message.text
     user=user_data['student_user']
     repeat_user = Users.query.filter(Users.user == user).first()
     if repeat_user:
-        print('aaa')
         update.message.reply_text(f'Пользователь с именем {user} уже существует')
         return ConversationHandler.END
     update.message.reply_text('Введите ссылку на github')
     return 'github'
 
-def dialog_git(bot, update, user_data):
+def data_user_dialog_git(bot, update, user_data):
     user_data['git']=update.message.text
     update.message.reply_text('Введите ваш часовой пояс')
     return 'gmt'
 
-def dialog_gmt(bot, update, user_data):
+def data_user_dialog_gmt(bot, update, user_data):
     user_data['gmt']=int(update.message.text)
     result=save_data_users(bot, update, user_data)
     update.message.reply_text(result)
     return ConversationHandler.END
+
+def clean_temporary_user_data(bot, update, user_data):#удаление данных из data_user
+    try:
+    del user_data['student_user', 'git', 'gmt']
+    except ValueError:
+        update.message.reply_text('Данные отсутствуют')
+    print user_data
