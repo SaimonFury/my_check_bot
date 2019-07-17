@@ -1,3 +1,4 @@
+from telegram.ext import ConversationHandler
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove
 import logging
 
@@ -88,18 +89,22 @@ def get_fallback(bot, update, user_data):
     update.message.reply_text('Пожалуйста, переформулируйте ответ')
 
 def save_users(user='Sergey', git_url='www.github.com', gmt=2):
-    repeat_user = Users.query.filter(Users.user == user).order_by(Users.gmt, git_url).first()
+    repeat_user = Users.query.filter(Users.user == temporary_user).order_by(Users.gmt,
+                  git_url).first()
     print(repeat_user)
 
 def save_data_users(bot, update, user_data):#функция добавления данных в бд
-    user=user_data['student_user']
-    repeat_user = Users.query.filter(Users.user == user).first()
+    temporary_user=user_data['temporary_student_user']
+    repeat_user = Users.query.filter(Users.user == temporary_user).first()
     if not repeat_user:   
-        new_user = Users(user=user, git_url=user_data['git'], gmt=user_data['gmt'])
+        new_user = Users(user=temporary_user, git_url=user_data['temporary_git'], 
+                         gmt=user_data['temporary_gmt'])
         db.db_session.add(new_user)
         db.db_session.commit()
+        clean_temporary_user_data(bot, update, user_data)
         return 'saved'
     else:
+        clean_temporary_user_data(bot, update, user_data)
         return 'allready exist'
     
 
@@ -109,29 +114,33 @@ def data_user_dialog_start(bot, update, user_data):#начало диалога
 
 
 def data_user_dialog_user(bot, update, user_data):#user == temporary_user?
-    user_data['student_user']=update.message.text
-    user=user_data['student_user']
-    repeat_user = Users.query.filter(Users.user == user).first()
+    user_data['temporary_student_user']=update.message.text
+    temporary_user=user_data['temporary_student_user']
+    repeat_user = Users.query.filter(Users.user == temporary_user).first()
     if repeat_user:
-        update.message.reply_text(f'Пользователь с именем {user} уже существует')
+        update.message.reply_text(f'Пользователь с именем {temporary_user} уже существует')
         return ConversationHandler.END
     update.message.reply_text('Введите ссылку на github')
     return 'github'
 
 def data_user_dialog_git(bot, update, user_data):
-    user_data['git']=update.message.text
+    user_data['temporary_git']=update.message.text
     update.message.reply_text('Введите ваш часовой пояс')
     return 'gmt'
 
 def data_user_dialog_gmt(bot, update, user_data):
-    user_data['gmt']=int(update.message.text)
-    result=save_data_users(bot, update, user_data)
-    update.message.reply_text(result)
-    return ConversationHandler.END
+    try:
+        user_data['temporary_gmt']=int(update.message.text)
+        result=save_data_users(bot, update, user_data)
+        update.message.reply_text(result)
+        return ConversationHandler.END
+    except ValueError:
+        update.message.reply_text('Не понимаю')
 
 def clean_temporary_user_data(bot, update, user_data):#удаление данных из data_user
-    try:
-    del user_data['student_user', 'git', 'gmt']
-    except ValueError:
-        update.message.reply_text('Данные отсутствуют')
-    print user_data
+    for user_data_field in ('temporary_student_user', 'temporary_git', 'temporary_gmt'):
+        try:
+            del user_data [user_data_field]        
+        except KeyError:
+            update.message.reply_text(f'Данные {user_data_field} отсутствуют')
+        logging.info(f'Удалены временные данные {user_data_field}')

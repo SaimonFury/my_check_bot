@@ -11,9 +11,9 @@ from create_user import add_new_user
 
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', #добавил логирование
                     level=logging.INFO,
+                    filemode='w',
                     filename='bot.log'
                     )
-
 
 def main():
 
