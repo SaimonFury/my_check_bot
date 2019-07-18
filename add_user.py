@@ -27,7 +27,8 @@ def main():
             'user':[MessageHandler(Filters.text, data_user_dialog_user, pass_user_data=True)],
             'github':[MessageHandler(Filters.text, data_user_dialog_git, pass_user_data=True)],
             'gmt':[MessageHandler(Filters.text, data_user_dialog_gmt, pass_user_data=True)],
-            'save_to_db':[MessageHandler(Filters.text, save_data_users, pass_user_data=True)]
+            'save_to_db':[MessageHandler(Filters.text, save_data_users, pass_user_data=True)],
+                          
         },
         fallbacks=[MessageHandler(Filters, get_fallback, pass_user_data=True)]
     )
@@ -40,6 +41,7 @@ def main():
                         CommandHandler('edit_group', edit_group, pass_user_data=True)],
                         # CommandHandler('questions', show_questions, pass_user_data=True)]
             'edit': [data_user_dialog,
+                     CommandHandler('back', back_edit, pass_user_data=True),
                      CommandHandler('delete', delete_user, pass_user_data=True),
                      MessageHandler(Filters.text, add_new_user, pass_user_data=True)],
             'student': [MessageHandler(Filters.text, see_students_tasks, pass_user_data=True)]

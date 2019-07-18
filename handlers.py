@@ -33,12 +33,20 @@ def edit_group(bot, update, user_data):
         students_list += f'{student}\n'
     my_keyboard = ReplyKeyboardMarkup([
         ['/add'],
-        ['/delete']
-        # ['/back']
+        ['/delete'],
+        ['/back']
     ])
     update.message.reply_text(students_list, reply_markup=my_keyboard)
     return 'edit'
 
+def back_edit(bot, update, user_data):
+    update.message.reply_text('Вернуться в главное меню', reply_markup=ReplyKeyboardMarkup([
+        ['/list'],
+        ['/edit_group'],
+        ['/questions']
+        #['/back']
+    ]))
+    return 'actions'
 
 def ask_user_name(bot, update):
     update.message.reply_text('Введите нового пользователя', reply_markup=ReplyKeyboardRemove())
@@ -68,20 +76,21 @@ def delete_user(bot, update, user_data):  # создаю функцию удал
 def see_students_list(bot, update, user_data):  # Просмотр всех учеников
     students_list_keyboard = []
     for student in user_data['teacher1']:
-        student_button = list[student]
+        student_button = [student,]
         students_list_keyboard.append(student_button)
-    update.message.reply_text('Список студентов:', students_list_keyboard)
+    print(students_list_keyboard[:3])
+    update.message.reply_text('Список студентов:', reply_markup=ReplyKeyboardMarkup(students_list_keyboard[:3]))
     return 'student'
 
 
 def see_students_tasks(bot, update, user_data):
-    students_name = update.message.text()
+    students_name = update.message.text
     tasks_keyboard = [
         ['/done_tasks'],
         ['/undone_tasks'],
         ['/questions']
     ]
-    update.message.reply_text('', tasks_keyboard)
+    update.message.reply_text(':)', reply_markup=ReplyKeyboardMarkup(tasks_keyboard))
     return 'tasks'
 
 
@@ -106,6 +115,7 @@ def save_data_users(bot, update, user_data):#функция добавления
     else:
         clean_temporary_user_data(bot, update, user_data)
         return 'allready exist'
+
     
 
 def data_user_dialog_start(bot, update, user_data):#начало диалога
@@ -132,7 +142,11 @@ def data_user_dialog_gmt(bot, update, user_data):
     try:
         user_data['temporary_gmt']=int(update.message.text)
         result=save_data_users(bot, update, user_data)
-        update.message.reply_text(result)
+        update.message.reply_text(result, reply_markup=ReplyKeyboardMarkup([
+        ['/add'],
+        ['/delete'],
+        ['/back']
+    ]))
         return ConversationHandler.END
     except ValueError:
         update.message.reply_text('Не понимаю')
