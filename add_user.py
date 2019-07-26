@@ -17,11 +17,19 @@ logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', #доб�
 
 def main():
 
-    mybot = Updater(config.API_KEY, request_kwargs=config.PROXY)
+    mybot=Updater(config.API_KEY, request_kwargs=config.PROXY)
     
     logging.info('Бот запускается')
 
-    data_user_dialog = ConversationHandler(
+    user_delete_dialog=ConversationHandler(
+        entry_points=[CommandHandler('delete', user_delete, pass_user_data=True)],
+        states={
+            'ffvdj':[MessageHandler(Filters.text, delete_user, pass_user_data=True)],
+        },
+        fallbacks=[MessageHandler(Filters, get_fallback, pass_user_data=True)]
+        )
+
+    data_user_dialog=ConversationHandler(
         entry_points=[CommandHandler('add', data_user_dialog_start, pass_user_data=True)],
         states={
             'user':[MessageHandler(Filters.text, data_user_dialog_user, pass_user_data=True)],
@@ -33,16 +41,17 @@ def main():
         fallbacks=[MessageHandler(Filters, get_fallback, pass_user_data=True)]
     )
 
-    main_dialog = ConversationHandler(
+    main_dialog=ConversationHandler(
         entry_points=[CommandHandler('start', start, pass_user_data=True)],
         states={
             'teachers_group': [MessageHandler(Filters.text, find_teachers_group, pass_user_data=True)],
             'actions': [CommandHandler('list', see_students_list, pass_user_data=True),
-                        CommandHandler('edit_group', edit_group, pass_user_data=True)],
+                        CommandHandler('edit_group', edit_group, pass_user_data=True),
+                        CommandHandler('back', back_main, pass_user_data=True)],
                         # CommandHandler('questions', show_questions, pass_user_data=True)]
             'edit': [data_user_dialog,
                      CommandHandler('back', back_edit, pass_user_data=True),
-                     CommandHandler('delete', delete_user, pass_user_data=True),
+                     user_delete_dialog,
                      MessageHandler(Filters.text, add_new_user, pass_user_data=True)],
             'student': [MessageHandler(Filters.text, see_students_tasks, pass_user_data=True)]
             #'tasks': [CommandHandler('done_tasks', show_done_tasks, pass_user_data=True),
@@ -53,7 +62,7 @@ def main():
         fallbacks=[MessageHandler(Filters, get_fallback, pass_user_data=True)]
     )
 
-    dp = mybot.dispatcher
+    dp=mybot.dispatcher
 
     dp.add_handler(main_dialog)
 

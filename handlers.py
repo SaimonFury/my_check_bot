@@ -20,8 +20,8 @@ def find_teachers_group(bot, update, user_data):
     my_keyboard = ReplyKeyboardMarkup([
         ['/list'],
         ['/edit_group'],
-        ['/questions']
-        #['/back']
+        ['/questions'],
+        ['/back']
     ])
     update.message.reply_text('Выберите действие', reply_markup=my_keyboard)
     return 'actions'
@@ -40,13 +40,18 @@ def edit_group(bot, update, user_data):
     return 'edit'
 
 def back_edit(bot, update, user_data):
-    update.message.reply_text('Вернуться в главное меню', reply_markup=ReplyKeyboardMarkup([
+    my_keyboard=ReplyKeyboardMarkup([
         ['/list'],
         ['/edit_group'],
-        ['/questions']
-        #['/back']
-    ]))
+        ['/questions'],
+        ['/back']
+        ])
+    update.message.reply_text('Вы в главном меню', reply_markup=my_keyboard)
     return 'actions'
+
+def back_main(bot, update, user_data):
+    update.message.reply_text('Ввеедите имя преподавателя', reply_markup=ReplyKeyboardRemove())
+    return 'teachers_group'
 
 def ask_user_name(bot, update):
     update.message.reply_text('Введите нового пользователя', reply_markup=ReplyKeyboardRemove())
@@ -62,21 +67,27 @@ def ask_user_name(bot, update):
 
 
 def delete_user(bot, update, user_data):  # создаю функцию удаления юзера
-    del_user = update.message.text
+    user_data['temporary_student_user']=update.message.text
+    del_user=user_data['temporary_student_user']
+    print(del_user)
     try:
-        user_data['teacher1'].remove(del_user)
+        Users.query.filter(Users.user==del_user).delete(synchronize_session='evaluate')
+        print('nenen')
     except ValueError:
         update.message.reply_text('Нет такого студента')
     except TypeError:
-        update.message.reply_text('')
+        update.message.reply_text('Студента с таким именем нет')
     except KeyError:
         update.message.reply_text('Введите имя преподавателя')
 
+def user_delete(bot, update, user_data):
+    update.message.reply_text('Введите имя студента', reply_markup=ReplyKeyboardRemove())
+    return 'ffvdj'
 
 def see_students_list(bot, update, user_data):  # Просмотр всех учеников
-    students_list_keyboard = []
+    students_list_keyboard=[]
     for student in user_data['teacher1']:
-        student_button = [student,]
+        student_button=[student,]
         students_list_keyboard.append(student_button)
     print(students_list_keyboard[:3])
     update.message.reply_text('Список студентов:', reply_markup=ReplyKeyboardMarkup(students_list_keyboard[:3]))
@@ -132,6 +143,8 @@ def data_user_dialog_user(bot, update, user_data):#user == temporary_user?
         return ConversationHandler.END
     update.message.reply_text('Введите ссылку на github')
     return 'github'
+
+
 
 def data_user_dialog_git(bot, update, user_data):
     user_data['temporary_git']=update.message.text
